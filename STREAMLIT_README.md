@@ -2,6 +2,8 @@
 
 A browser-based Simplicity smart contract compiler built with Leptos/WASM and Streamlit. Compiles Simplicity code directly in the browser without server-side computation.
 
+![screenhot](doc/streamlit.png)
+
 ## Features
 
 - **Pure Browser Execution**: All compilation runs in-browser via WebAssembly

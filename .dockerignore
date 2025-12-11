@@ -1,0 +1,15 @@
+target/
+dist/
+.git/
+.gitignore
+README.md
+doc/
+node_modules/
+*.lock
+.DS_Store
+*.wasm
+*.js
+*.d.ts
+server/
+Trunk.toml
+Cargo.lock

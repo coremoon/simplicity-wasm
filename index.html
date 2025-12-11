@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simplicity Compiler</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+    <main>
+        <h1>Simplicity Compiler</h1>
+        
+        <div class="compiler-widget">
+            <div class="editor-container">
+                <label for="program-input">Simplicity Program:</label>
+                <textarea
+                    id="program-input"
+                    class="program-editor"
+                    placeholder="fn main() { }"
+                    rows="15"
+                    cols="80"
+                    spellcheck="false"
+                ></textarea>
+            </div>
+            
+            <div class="button-container">
+                <button class="compile-button" id="compile-btn" onclick="handleCompile()">
+                    🔨 Compile
+                </button>
+            </div>
+            
+            <div class="output-container" id="output">
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import init, { compile_simplicity } from './leptos_demo.js';
+
+        init().then(() => {
+            console.log('✓ WASM loaded');
+        }).catch(err => {
+            console.error('WASM error:', err);
+        });
+
+        window.handleCompile = function() {
+            const textarea = document.getElementById('program-input');
+            const code = textarea.value;
+            const outputDiv = document.getElementById('output');
+            
+            try {
+                const result = compile_simplicity(code);
+                const data = JSON.parse(result);
+                
+                if (data.error) {
+                    outputDiv.innerHTML = `<div class="output-error"><strong>✗ Error</strong><br/><pre>${data.error}</pre></div>`;
+                } else {
+                    outputDiv.innerHTML = `<div class="output-success"><strong>✓ Success</strong><br/><code>CMR: ${data.cmr}</code></div>`;
+                }
+            } catch (e) {
+                console.error('Error:', e);
+                outputDiv.innerHTML = `<div class="output-error"><strong>✗ Error</strong><br/><pre>${e.message}</pre></div>`;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -7,9 +7,15 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-leptos = { version = "0.6", features = ["csr", "ssr"] }
+leptos = { version = "0.7", features = ["csr"] }
 wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = ["HtmlTextAreaElement", "Window", "FileReader", "File", "FileList", "DataTransfer", "DragEvent"] }
 console_error_panic_hook = "0.1"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 simplicityhl = "0.3.0"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1

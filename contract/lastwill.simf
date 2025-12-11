@@ -1,0 +1,64 @@
+fn checksig(pk: Pubkey, sig: Signature) {
+    // Compute the standard signature message hash for this spending transaction.
+    let msg: u256 = jet::sig_all_hash();
+    // Verify that `sig` is a valid Schnorr signature (BIP340) by `pk` over `msg`.
+    jet::bip_0340_verify((pk, msg), sig);
+}
+
+fn recursive_covenant() {
+    // Enforce that the spending transaction has exactly 2 outputs.
+    assert!(jet::eq_32(jet::num_outputs(), 2));
+    // Get the hash of the currently executing script (this covenant script).
+    let this_script_hash: u256 = jet::current_script_hash();
+    // Read the script hash of output 0 and fail if it does not exist.
+    let output_script_hash: u256 = unwrap(jet::output_script_hash(0));
+    // Enforce that output 0 uses the same script as this input (recursive covenant).
+    assert!(jet::eq_256(this_script_hash, output_script_hash));
+    // Enforce that output 1 is a fee output to the miner.
+    assert!(unwrap(jet::output_is_fee(1)));
+}
+
+fn inherit_spend(inheritor_pk: Pubkey, inheritor_sig: Signature) {
+    // Require that a relative timelock of 180 days has passed before spending.
+    let days_180: Distance = 25920;
+    jet::check_lock_distance(days_180);
+    // After the timelock, allow the inheritor to spend using their key/signature.
+    checksig(inheritor_pk, inheritor_sig);
+}
+
+fn cold_spend(cold_pk: Pubkey, cold_sig: Signature) {
+    // Immediate spend path for the cold (high‑security) key.
+    checksig(cold_pk, cold_sig);
+}
+
+fn refresh_spend(hot_pk: Pubkey, hot_sig: Signature) {
+    // Spend using a hot key (e.g. for refreshing or rotating the UTXO).
+    checksig(hot_pk, hot_sig);
+    // Require that the new output recreates the same covenant structure.
+    recursive_covenant();
+}
+
+
+/*
+This is the main entry point of the program that controls spending logic based on who is spending.
+
+- It initializes public keys for three parties: Alice, Bob, and Charlie.
+- Depending on the condition `INHERIT_OR_NOT` from the witness, it routes spending:
+    - If an inheritor signature is provided (Left variant), it calls `inherit_spend` with Alice's key.
+    - Otherwise (Right variant), it checks if the signature is from cold storage (Left) or hot storage (Right):
+        - For cold storage (Bob's key), it calls `cold_spend`.
+        - For hot storage (Charlie's key), it calls `refresh_spend`, which also enforces the recursive covenant.
+*/
+fn main() {
+    let alice_pk: Pubkey = witness::ALICE_PUBLIC_KEY;
+    let bob_pk: Pubkey = witness::BOB_PUBLIC_KEY;
+    let charlie_pk: Pubkey = witness::CHARLIE_PUBLIC_KEY;
+    
+    match witness::INHERIT_OR_NOT {
+        Left(inheritor_sig: Signature) => inherit_spend(alice_pk, inheritor_sig),
+        Right(cold_or_hot: Either<Signature, Signature>) => match cold_or_hot {
+            Left(cold_sig: Signature) => cold_spend(bob_pk, cold_sig),
+            Right(hot_sig: Signature) => refresh_spend(charlie_pk, hot_sig),
+        },
+    }
+}

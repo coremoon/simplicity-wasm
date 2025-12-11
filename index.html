@@ -6,33 +6,7 @@
     <title>Simplicity Compiler</title>
     <link rel="stylesheet" href="/style.css" />
 </head>
-<body>
-    <main>
-        <h1>Simplicity Compiler</h1>
-        
-        <div class="compiler-widget">
-            <div class="editor-container">
-                <label for="program-input">Simplicity Program:</label>
-                <textarea
-                    id="program-input"
-                    class="program-editor"
-                    placeholder="fn main() { }"
-                    rows="15"
-                    cols="80"
-                    spellcheck="false"
-                ></textarea>
-            </div>
-            
-            <div class="button-container">
-                <button class="compile-button" id="compile-btn" onclick="handleCompile()">
-                    🔨 Compile
-                </button>
-            </div>
-            
-            <div class="output-container" id="output">
-            </div>
-        </div>
-    </main>
+<body> 
 
     <script type="module">
         import init, { compile_simplicity } from './leptos_demo.js';

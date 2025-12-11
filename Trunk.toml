@@ -2,9 +2,6 @@
 target = "index.html"
 public_url = "/"
 
-[watch]
-ignore = ["target"]
-
 [serve]
 port = 8080
 open = false

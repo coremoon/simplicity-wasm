@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Rust/Leptos WASM frontend with Nginx
+  wasm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: simplicity-wasm
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/index.html"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - simplicity
+
+  # Python/Flask backend
+  python:
+    build:
+      context: .
+      dockerfile: python/Dockerfile
+    container_name: simplicity-python
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - simplicity
+    depends_on:
+      - wasm
+
+networks:
+  simplicity:
+    driver: bridge

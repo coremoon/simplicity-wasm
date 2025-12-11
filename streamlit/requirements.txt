@@ -1,0 +1,4 @@
+streamlit==1.32.2
+wasmtime==39.0.0
+requests==2.31.0     # HTTP calls to Flask
+
